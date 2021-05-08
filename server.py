@@ -44,6 +44,8 @@ class Server(Agent):
         async def run(self):
             self.presence.on_subscribe = self.on_subscribe
             self.presence.on_subscribed = self.on_subscribed
+            self.presence.on_unsubscribe = self.on_unsubscribe
+            self.presence.on_unsubscribed = self.on_unsubscribed
             self.presence.on_available = self.on_available
 
             self.presence.set_available()
