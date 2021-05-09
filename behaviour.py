@@ -32,7 +32,7 @@ class SendMessage(OneShotBehaviour):
         log.debug(f'[{self.agent.name}] Sending message to: {self.jids}')
         for jid in self.jids:
             msg = Message(to=jid)
-            #msg.set_metadata('action', 'send_message')
+            msg.set_metadata('action', 'send_message')
             msg.body = self.message
             await self.send(msg)
 

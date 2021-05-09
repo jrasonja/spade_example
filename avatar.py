@@ -71,9 +71,8 @@ class Avatar(Agent):
 
         self.add_behaviour(self.PresenceSetup())
         message_template = Template()
-        #message_template.set_metadata('action','send_message')
-        self.add_behaviour(ReceiveMessage())
-        #self.add_behaviour(self.Chat())
+        message_template.set_metadata('action','send_message')
+        self.add_behaviour(ReceiveMessage(), message_template)
 
     def get_contacts_simple(self):
         return [
