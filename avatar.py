@@ -73,6 +73,7 @@ class Avatar(Agent):
         message_template = Template()
         message_template.set_metadata('action','send_message')
         self.add_behaviour(ReceiveMessage(), message_template)
+        self.add_behaviour(self.Chat())
 
     def get_contacts_simple(self):
         return [
