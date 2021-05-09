@@ -7,9 +7,12 @@ from avatar import Avatar
 from server import Server
 
 
-log = logging.getLogger('spade_primjer')
+log = logging.getLogger('spade_example')
 log.setLevel(logging.DEBUG)
-log.addHandler(logging.StreamHandler(sys.stdout))
+handler = logging.StreamHandler(sys.stdout)
+formatter = logging.Formatter('%(message)s')
+handler.setFormatter(formatter)
+log.addHandler(handler)
 
 
 
@@ -40,6 +43,7 @@ if __name__ == '__main__':
             time.sleep(1)
         except KeyboardInterrupt:
             break
+    
     server.stop()
     avatar.stop()
     avatar2.stop()

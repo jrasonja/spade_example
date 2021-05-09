@@ -9,37 +9,36 @@ from spade.template import Template
 
 import settings
 
-log = logging.getLogger('spade_primjer')
-log.setLevel(logging.DEBUG)
-log.addHandler(logging.StreamHandler(sys.stdout))
+log = logging.getLogger('spade_example')
+
 
 
 class Server(Agent):
 
-    class Presence(OneShotBehaviour):
+    class PresenceSetup(OneShotBehaviour):
 
         def on_available(self, jid, stanza):
-            print("[{}] Agent {} is available.".format(self.agent.name, jid.split("@")[0]))
+            log.info(f"[{self.agent.name}] Agent {jid.split('@')[0]} is available.")
 
         def on_subscribed(self, jid):
-            print("[{}] Agent {} has accepted the subscription.".format(self.agent.name, jid.split("@")[0]))
-            print("[{}] Contacts List: {}".format(self.agent.name, self.agent.presence.get_contacts()))
+            log.debug(f"[{self.agent.name}] Agent {jid.split('@')[0]} has accepted the subscription.")
+            log.debug(f"[{self.agent.name}] Contacts: {self.agent.get_contacts_simple()}")
 
         def on_subscribe(self, jid):
-            print("[{}] Agent {} asked for subscription. Let's aprove it.".format(self.agent.name, jid.split("@")[0]))
+            log.debug(f"[{self.agent.name}] Agent {jid.split('@')[0]} asked for subscription. Let's aprove it.")
             self.presence.approve(jid)
-            print("[{}] Contacts List: {}".format(self.agent.name, self.agent.presence.get_contacts()))
+            log.debug(f"[{self.agent.name}] Contacts: {self.agent.get_contacts_simple()}")
             self.presence.subscribe(jid)
 
         def on_unsubscribe(self, jid):
-            print("[{}] Agent {} asked for unsubscription. Let's aprove it.".format(self.agent.name, jid.split("@")[0]))
+            log.debug(f"[{self.agent.name}] Agent {jid.split('@')[0]} asked for unsubscription. Let's aprove it.")
             self.presence.approve(jid)
-            print("[{}] Contacts List: {}".format(self.agent.name, self.agent.presence.get_contacts()))
-            self.presence.unsubscribe(jid)
+            log.debug(f"[{self.agent.name}] Contacts: {self.agent.get_contacts_simple()}")
 
         def on_unsubscribed(self, jid):
-            print("[{}] Agent {} has unsubscribe.".format(self.agent.name, jid.split("@")[0]))
-            print("[{}] Contacts List: {}".format(self.agent.name, self.agent.presence.get_contacts()))
+            log.debug(f"[{self.agent.name}] Agent {jid.split('@')[0]} has unsubscribe.")
+            log.debug(f"[{self.agent.name}] Contacts: {self.agent.get_contacts_simple()}")
+
 
         async def run(self):
             self.presence.on_subscribe = self.on_subscribe
@@ -49,11 +48,26 @@ class Server(Agent):
             self.presence.on_available = self.on_available
 
             self.presence.set_available()
-            print("[{}] Contacts List: {}".format(self.agent.name, self.agent.presence.get_contacts()))
-            #self.presence.unsubscribe(settings.AGENT_JID)
-            #self.presence.unsubscribe(settings.AGENT2_JID)
+
+            log.debug(f"[{self.agent.name}] Contacts: {self.agent.get_contacts_simple()}")
+
+
 
     async def setup(self):
-        log.info(f'Server {self.name} running')
+        log.info(f"[{self.name}] Server  running")
 
-        self.add_behaviour(self.Presence())
+        self.add_behaviour(self.PresenceSetup())
+
+    def get_contacts_simple(self):
+        return [
+            str(jid)
+            for jid in self.presence.get_contacts().keys() 
+        ]
+
+    def stop(self):
+        log.debug(f'[{self.name}] Stopping...')
+        #Get JID from contacts and unsubscribe
+        for contact in self.presence.get_contacts().keys():
+            log.debug(f'[{self.name}] Unsubscribe {contact}')
+            self.presence.unsubscribe(str(contact))
+        super().stop()
