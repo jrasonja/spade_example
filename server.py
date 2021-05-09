@@ -72,7 +72,7 @@ class Server(Agent):
 
         self.broadcast_template = Template()
         self.broadcast_template.set_metadata('action','send_message')
-        self.add_behaviour(BroadcastMessage(), self.broadcast_template)
+        self.add_behaviour(self.BroadcastMessage())
 
     def get_contacts_simple(self):
         return [
