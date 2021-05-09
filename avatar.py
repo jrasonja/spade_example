@@ -59,10 +59,10 @@ class Avatar(Agent):
             if not matched:
                 return
             
-            to = matched.group('to')
-            if to == '':
-                to = '__all__'
-            send_message = SendMessage(to,matched.group('msg'))
+            send_message = SendMessage(
+                matched.group('to') or '__all__',
+                matched.group('msg')
+            )
             self.agent.add_behaviour(send_message)
             
 
