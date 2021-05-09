@@ -19,7 +19,11 @@ class SendMessage(OneShotBehaviour):
         if not isinstance(jids, list):
             raise TypeError("Only jids or list of jids are allowed") 
 
-        self.jids = jids
+        #Cleaning jids
+        self.jids = [
+            jid if '@' in jid else f'{jid}@{settings.XMPP_SERVER}'
+            for jid in jids
+        ]
         self.message = message
 
         super().__init__()
