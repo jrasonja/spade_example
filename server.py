@@ -3,11 +3,13 @@ import logging
 import sys
 
 from spade.agent import Agent
-from spade.behaviour import OneShotBehaviour
+from spade.behaviour import OneShotBehaviour, CyclicBehaviour
 from spade.message import Message
 from spade.template import Template
 
+from behaviour import SendMessage
 import settings
+
 
 log = logging.getLogger('spade_example')
 
@@ -51,12 +53,26 @@ class Server(Agent):
 
             log.debug(f"[{self.agent.name}] Contacts: {self.agent.get_contacts_simple()}")
 
+    class BroadcastMessage(CyclicBehaviour):
 
+        async def run(self):
+            broadcast_msg = await self.receive(timeout=1)
+            
+            if not broadcast_msg:
+                return
+
+            log.debug(f"[{self.agent.name}] Broadcast message received from {broadcast_msg.sender}")
+            for jid in self.agent.get_contacts_simple():
+                msg_behav = SendMessage(jid, broadcast_msg.body)
+                self.agent.add_behaviour(msg_behav)           
 
     async def setup(self):
-        log.info(f"[{self.name}] Server  running")
-
+        log.info(f"[{self.name}] Server running")
         self.add_behaviour(self.PresenceSetup())
+
+        self.broadcast_template = Template()
+        self.broadcast_template.set_metadata('action','send_message')
+        self.add_behaviour(BroadcastMessage(), self.broadcast_template)
 
     def get_contacts_simple(self):
         return [
@@ -66,7 +82,7 @@ class Server(Agent):
 
     def stop(self):
         log.debug(f'[{self.name}] Stopping...')
-        #Get JID from contacts and unsubscribe
+        #Unsubscribe from all contacts
         for contact in self.presence.get_contacts().keys():
             log.debug(f'[{self.name}] Unsubscribe {contact}')
             self.presence.unsubscribe(str(contact))

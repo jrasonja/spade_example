@@ -1,12 +1,14 @@
 import time
 import logging
 import sys
+import re
 
 from spade.agent import Agent
-from spade.behaviour import OneShotBehaviour
+from spade.behaviour import OneShotBehaviour, CyclicBehaviour
 from spade.message import Message
 from spade.template import Template
 
+from behaviour import SendMessage, ReceiveMessage
 import settings
 
 log = logging.getLogger('spade_example')
@@ -47,12 +49,31 @@ class Avatar(Agent):
 
             self.presence.subscribe(settings.SERVER_JID)
 
+    class Chat(CyclicBehaviour):
+        async def run(self):
+            pattern = re.compile('^@(?P<to>[\w\d\_@-]*) +(?P<msg>.+)$')
+            message = input("@<to?> <message>:")
 
+            matched = pattern.match(message)
+
+            if not matched:
+                return
+            
+            to = matched.group('to')
+            if to == '':
+                to = '__all__'
+            send_message = SendMessage(to,matched.group('msg'))
+            self.agent.add_behaviour(send_message)
+            
 
     async def setup(self):
         log.info(f"[{self.name}] Avatar running")
 
         self.add_behaviour(self.PresenceSetup())
+        message_template = Template()
+        #message_template.set_metadata('action','send_message')
+        self.add_behaviour(ReceiveMessage())
+        #self.add_behaviour(self.Chat())
 
     def get_contacts_simple(self):
         return [
